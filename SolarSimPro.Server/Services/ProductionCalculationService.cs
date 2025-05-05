@@ -1,6 +1,42 @@
 ﻿// Services/ProductionCalculationService.cs
+using SolarSimPro.Server.Models;
+using SolarSimPro.Server.Services.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http.Json;
+
 public class ProductionCalculationService
 {
+    // Add this method to your class
+    private double ApplyInverterEfficiency(double dcEnergy, List<Inverter> inverters)
+    {
+        // If no inverters, assume a default efficiency
+        if (inverters == null || inverters.Count == 0)
+        {
+            // Using a typical average efficiency of 97%
+            return dcEnergy * 0.97;
+        }
+
+        // If multiple inverters, calculate weighted average efficiency
+        double totalDcPower = 0;
+        double totalAcPower = 0;
+
+        foreach (var inverter in inverters)
+        {
+            double inputPower = dcEnergy / inverters.Count; // Simple distribution
+            double efficiency = inverter.InverterModel?.MaxEfficiency ?? 0.97; // Default to 97% if not specified
+
+            totalDcPower += inputPower;
+            totalAcPower += inputPower * efficiency;
+        }
+
+        return totalAcPower;
+    }
+
     public MonthlyProductionData CalculateProduction(SolarSystem system, SiteAnalysis site, ShadingResult shading)
     {
         var result = new MonthlyProductionData();

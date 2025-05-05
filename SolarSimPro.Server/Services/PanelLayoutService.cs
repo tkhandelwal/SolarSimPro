@@ -1,4 +1,14 @@
 ﻿// Services/PanelLayoutService.cs
+using SolarSimPro.Server.Models;
+using SolarSimPro.Server.Services.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http.Json;
+
 public class PanelLayoutService
 {
     public List<Panel> GenerateOptimalLayout(RoofGeometry roof, PanelSpecifications panelSpec)
