@@ -1,6 +1,7 @@
 ﻿// Models/MeteorologicalData.cs
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SolarSimPro.Server.Models
 {
@@ -12,6 +13,27 @@ namespace SolarSimPro.Server.Models
         {
             return DailyData.FirstOrDefault(d => d.Date.Date == date.Date) ??
                    new DailyWeatherData { Date = date };
+        }
+
+        public MonthlyMeteoData GetMonthData(int month)
+        {
+            // Get the monthly data by averaging daily data for the month
+            var monthlyData = DailyData
+                .Where(d => d.Date.Month == month)
+                .ToList();
+
+            if (monthlyData.Count == 0)
+                return new MonthlyMeteoData { Month = month };
+
+            return new MonthlyMeteoData
+            {
+                Month = month,
+                GlobHor = monthlyData.Average(d => d.GlobalHorizontalIrradiation),
+                DiffHor = monthlyData.Average(d => d.DiffuseHorizontalIrradiation),
+                Temperature = monthlyData.Average(d => d.AverageTemperature),
+                WindSpeed = monthlyData.Average(d => d.WindSpeed),
+                Humidity = monthlyData.Average(d => d.Humidity)
+            };
         }
     }
 

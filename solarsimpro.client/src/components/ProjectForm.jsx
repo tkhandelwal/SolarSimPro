@@ -1,11 +1,10 @@
-// src/components/ProjectForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const ProjectForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const isNew = id === 'new';
+    const isNew = !id || id === 'new';
 
     const [project, setProject] = useState({
         name: '',
@@ -20,28 +19,31 @@ const ProjectForm = () => {
     });
 
     const [loading, setLoading] = useState(!isNew);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (!isNew) {
+            const fetchProject = async () => {
+                try {
+                    setLoading(true);
+                    const response = await fetch(`/api/projects/${id}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setProject(data);
+                    } else {
+                        setError('Failed to load project. Please try again later.');
+                    }
+                } catch (error) {
+                    console.error('Error fetching project:', error);
+                    setError('An error occurred while fetching the project.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
             fetchProject();
         }
-    }, [id]);
-
-    const fetchProject = async () => {
-        try {
-            const response = await fetch(`/api/projects/${id}`);
-            if (response.ok) {
-                const data = await response.json();
-                setProject(data);
-            } else {
-                console.error('Failed to fetch project');
-            }
-        } catch (error) {
-            console.error('Error fetching project:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [id, isNew]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -62,6 +64,7 @@ const ProjectForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
 
         try {
             const url = isNew ? '/api/projects' : `/api/projects/${id}`;
@@ -79,28 +82,39 @@ const ProjectForm = () => {
                 const data = isNew ? await response.json() : project;
                 navigate(`/projects/${isNew ? data.id : id}`);
             } else {
-                console.error('Failed to save project');
+                const errorData = await response.text();
+                console.error('Failed to save project:', errorData);
+                setError('Failed to save project. Please check your input and try again.');
             }
         } catch (error) {
             console.error('Error saving project:', error);
+            setError('An error occurred while saving the project.');
         }
     };
 
     if (loading) {
-        return <div>Loading project...</div>;
+        return (
+            <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p className="loading-text">Loading project...</p>
+            </div>
+        );
     }
 
     return (
-        <div className="project-form">
-            <h2>{isNew ? 'Create New Project' : 'Edit Project'}</h2>
+        <div className="form-container">
+            <h2 className="form-title">{isNew ? 'Create New Project' : 'Edit Project'}</h2>
+
+            {error && <div className="error-message">{error}</div>}
 
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                    <label htmlFor="name">Project Name</label>
+                    <label htmlFor="name">Project Name*</label>
                     <input
                         type="text"
                         id="name"
                         name="name"
+                        className="form-control"
                         value={project.name}
                         onChange={handleInputChange}
                         required
@@ -113,6 +127,7 @@ const ProjectForm = () => {
                         type="text"
                         id="clientName"
                         name="clientName"
+                        className="form-control"
                         value={project.clientName}
                         onChange={handleInputChange}
                     />
@@ -124,6 +139,7 @@ const ProjectForm = () => {
                         type="text"
                         id="location"
                         name="location"
+                        className="form-control"
                         value={project.location}
                         onChange={handleInputChange}
                     />
@@ -137,6 +153,7 @@ const ProjectForm = () => {
                             step="0.000001"
                             id="latitude"
                             name="latitude"
+                            className="form-control"
                             value={project.latitude}
                             onChange={handleInputChange}
                         />
@@ -149,6 +166,7 @@ const ProjectForm = () => {
                             step="0.000001"
                             id="longitude"
                             name="longitude"
+                            className="form-control"
                             value={project.longitude}
                             onChange={handleInputChange}
                         />
@@ -162,6 +180,7 @@ const ProjectForm = () => {
                             type="number"
                             id="altitude"
                             name="altitude"
+                            className="form-control"
                             value={project.altitude}
                             onChange={handleInputChange}
                         />
@@ -176,6 +195,7 @@ const ProjectForm = () => {
                             max="1"
                             id="albedo"
                             name="albedo"
+                            className="form-control"
                             value={project.albedo}
                             onChange={handleInputChange}
                         />
@@ -188,6 +208,7 @@ const ProjectForm = () => {
                         type="text"
                         id="timeZone"
                         name="timeZone"
+                        className="form-control"
                         value={project.timeZone}
                         onChange={handleInputChange}
                     />
@@ -198,6 +219,7 @@ const ProjectForm = () => {
                     <select
                         id="type"
                         name="type"
+                        className="form-control"
                         value={project.type}
                         onChange={handleInputChange}
                     >
@@ -209,10 +231,10 @@ const ProjectForm = () => {
                 </div>
 
                 <div className="form-actions">
-                    <button type="button" onClick={() => navigate(-1)}>
+                    <button type="button" onClick={() => navigate('/projects')} className="button secondary">
                         Cancel
                     </button>
-                    <button type="submit">
+                    <button type="submit" className="button">
                         {isNew ? 'Create Project' : 'Save Changes'}
                     </button>
                 </div>

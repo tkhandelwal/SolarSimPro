@@ -1,51 +1,53 @@
-import { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
+import ProjectList from './components/ProjectList';
+import ProjectForm from './components/ProjectForm';
+import ProjectDashboard from './components/ProjectDashboard';
+import SolarSystemForm from './components/SolarSystemForm'; // Add this import
 
 function App() {
-    const [forecasts, setForecasts] = useState();
-
-    useEffect(() => {
-        populateWeatherData();
-    }, []);
-
-    const contents = forecasts === undefined
-        ? <p><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationreact">https://aka.ms/jspsintegrationreact</a> for more details.</em></p>
-        : <table className="table table-striped" aria-labelledby="tableLabel">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temp. (C)</th>
-                    <th>Temp. (F)</th>
-                    <th>Summary</th>
-                </tr>
-            </thead>
-            <tbody>
-                {forecasts.map(forecast =>
-                    <tr key={forecast.date}>
-                        <td>{forecast.date}</td>
-                        <td>{forecast.temperatureC}</td>
-                        <td>{forecast.temperatureF}</td>
-                        <td>{forecast.summary}</td>
-                    </tr>
-                )}
-            </tbody>
-        </table>;
-
     return (
-        <div>
-            <h1 id="tableLabel">Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
-            {contents}
-        </div>
+        <Router>
+            <div className="app-container">
+                <header className="app-header">
+                    <div className="logo">
+                        <span>SolarSimPro</span>
+                    </div>
+                    <nav className="main-nav">
+                        <Link to="/">Home</Link>
+                        <Link to="/projects">Projects</Link>
+                    </nav>
+                </header>
+
+                <main className="container">
+                    <Routes>
+                        <Route path="/" element={
+                            <div className="home-page">
+                                <h1>Welcome to SolarSimPro</h1>
+                                <p>Advanced solar design and simulation software for professionals</p>
+                                <div className="button-group">
+                                    <Link to="/projects" className="button">View Projects</Link>
+                                    <Link to="/projects/new" className="button secondary">Create New Project</Link>
+                                </div>
+                            </div>
+                        } />
+                        <Route path="/projects" element={<ProjectList />} />
+                        <Route path="/projects/new" element={<ProjectForm />} />
+                        <Route path="/projects/:id" element={<ProjectDashboard />} />
+                        <Route path="/projects/edit/:id" element={<ProjectForm />} />
+                        <Route path="/projects/:projectId/systems/new" element={<SolarSystemForm />} />
+
+                    </Routes>
+                </main>
+
+                <footer>
+                    <div className="copyright">
+                        © 2025 SolarSimPro - Solar Design and Simulation
+                    </div>
+                </footer>
+            </div>
+        </Router>
     );
-    
-    async function populateWeatherData() {
-        const response = await fetch('weatherforecast');
-        if (response.ok) {
-            const data = await response.json();
-            setForecasts(data);
-        }
-    }
 }
 
 export default App;

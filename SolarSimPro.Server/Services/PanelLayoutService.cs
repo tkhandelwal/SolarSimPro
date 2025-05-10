@@ -1,50 +1,113 @@
 ﻿// Services/PanelLayoutService.cs
 using SolarSimPro.Server.Models;
-using SolarSimPro.Server.Services.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System.Net.Http.Json;
 
-public class PanelLayoutService
+namespace SolarSimPro.Server.Services
 {
-    public List<Panel> GenerateOptimalLayout(RoofGeometry roof, PanelSpecifications panelSpec)
+    public class PanelLayoutService
     {
-        List<Panel> panels = new List<Panel>();
-
-        // Algorithm steps:
-        // 1. Identify viable roof sections (orientation, shade-free)
-        // 2. Define row spacing based on latitude (shadow analysis)
-        // 3. Start from most southern edge of roof (northern hemisphere)
-        // 4. Place panels in rows with appropriate spacing
-
-        // For each roof section
-        foreach (var section in roof.Sections)
+        public List<Panel> GenerateOptimalLayout(RoofGeometry roof, PanelSpecifications panelSpec)
         {
-            if (IsSuitableForPanels(section))
-            {
-                var layoutGrid = CalculateOptimalGrid(section, panelSpec);
+            List<Panel> panels = new List<Panel>();
 
-                foreach (var gridPosition in layoutGrid)
+            // Algorithm steps:
+            // 1. Identify viable roof sections (orientation, shade-free)
+            // 2. Define row spacing based on latitude (shadow analysis)
+            // 3. Start from most southern edge of roof (northern hemisphere)
+            // 4. Place panels in rows with appropriate spacing
+
+            // For each roof section
+            foreach (var section in roof.Sections)
+            {
+                if (IsSuitableForPanels(section))
                 {
-                    panels.Add(new Panel
+                    var layoutGrid = CalculateOptimalGrid(section, panelSpec);
+
+                    foreach (var gridPosition in layoutGrid)
                     {
-                        Id = Guid.NewGuid(),
-                        Position = gridPosition.Position,
-                        Orientation = new Orientation
+                        panels.Add(new Panel
                         {
-                            Tilt = section.Slope,
-                            Azimuth = section.Azimuth
-                        },
-                        PanelSpecification = panelSpec
+                            Id = Guid.NewGuid(),
+                            Position = gridPosition.Position,
+                            Orientation = new Orientation
+                            {
+                                Tilt = section.Slope,
+                                Azimuth = section.Azimuth
+                            },
+                            PanelSpecification = panelSpec
+                        });
+                    }
+                }
+            }
+
+            return panels;
+        }
+
+        private bool IsSuitableForPanels(RoofSection section)
+        {
+            // Check if roof section is suitable for panels based on orientation and slope
+            // For this example, we'll just return true
+            return true;
+        }
+
+        private List<GridPosition> CalculateOptimalGrid(RoofSection section, PanelSpecifications specs)
+        {
+            // Calculate optimal positioning of panels on roof section
+            var gridPositions = new List<GridPosition>();
+
+            // Simple implementation for example purposes
+            double xSpacing = specs.Width + 0.1; // 10cm gap between panels
+            double ySpacing = specs.Height + 0.1; // 10cm gap between panels
+
+            // Calculate how many panels can fit in x and y directions
+            double sectionWidth = CalculateSectionWidth(section);
+            double sectionLength = CalculateSectionLength(section);
+
+            int panelsX = (int)(sectionWidth / xSpacing);
+            int panelsY = (int)(sectionLength / ySpacing);
+
+            // Create grid positions
+            for (int x = 0; x < panelsX; x++)
+            {
+                for (int y = 0; y < panelsY; y++)
+                {
+                    gridPositions.Add(new GridPosition
+                    {
+                        Position = new Position
+                        {
+                            X = x * xSpacing,
+                            Y = y * ySpacing,
+                            Z = 0 // This would be calculated based on roof height
+                        }
                     });
                 }
             }
+
+            return gridPositions;
         }
 
-        return panels;
+        private double CalculateSectionWidth(RoofSection section)
+        {
+            // Calculate width based on points
+            if (section.Points.Count < 2)
+                return 0;
+
+            return Math.Abs(section.Points.Max(p => p.X) - section.Points.Min(p => p.X));
+        }
+
+        private double CalculateSectionLength(RoofSection section)
+        {
+            // Calculate length based on points
+            if (section.Points.Count < 2)
+                return 0;
+
+            return Math.Abs(section.Points.Max(p => p.Y) - section.Points.Min(p => p.Y));
+        }
+    }
+
+    public class GridPosition
+    {
+        public Position Position { get; set; } = new Position();
     }
 }

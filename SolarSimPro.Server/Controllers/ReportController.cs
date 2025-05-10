@@ -1,16 +1,27 @@
 ﻿// Controllers/ReportController.cs
+using System;
 using Microsoft.AspNetCore.Mvc;
+using SolarSimPro.Server.Models;
+using SolarSimPro.Server.Services.Interfaces;
 
-[ApiController]
-[Route("api/[controller]")]
-public class ReportController : ControllerBase
+namespace SolarSimPro.Server.Controllers
 {
-    private readonly IReportService _reportService;
-
-    [HttpGet("{projectId}")]
-    public ActionResult<SimulationReport> GenerateReport(Guid projectId)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ReportController : ControllerBase
     {
-        // Generate report similar to the PVsyst PDF you shared
-        return _reportService.GenerateReport(projectId);
+        private readonly IReportService _reportService;
+
+        public ReportController(IReportService reportService)
+        {
+            _reportService = reportService;
+        }
+
+        [HttpGet("{projectId}")]
+        public ActionResult<SimulationReport> GenerateReport(Guid projectId)
+        {
+            // Generate report similar to the PVsyst PDF you shared
+            return _reportService.GenerateReport(projectId);
+        }
     }
 }

@@ -47,6 +47,7 @@ namespace SolarSimPro.Server.Controllers
             return Ok(system);
         }
 
+        // Ensure this works in SolarSystemsController.cs
         [HttpPost]
         public async Task<ActionResult<SolarSystem>> CreateSolarSystem(Guid projectId, SolarSystem system)
         {

@@ -1,7 +1,7 @@
-﻿// Models/ShadingModels.cs
+﻿// Models/ShadingModels.cs - Keep this file and expand it
+
 using System;
 using System.Collections.Generic;
-
 
 namespace SolarSimPro.Server.Models
 {
@@ -57,3 +57,4 @@ namespace SolarSimPro.Server.Models
         public bool IsShaded { get; set; }
     }
 }
+

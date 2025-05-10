@@ -1,4 +1,4 @@
-// Program.cs
+// SolarSimPro.Server/Program.cs
 using Microsoft.EntityFrameworkCore;
 using SolarSimPro.Server.Data;
 using SolarSimPro.Server.Services;
@@ -16,8 +16,13 @@ builder.Services.AddControllers()
     });
 
 // Database context
+var folder = Environment.SpecialFolder.LocalApplicationData;
+var path = Environment.GetFolderPath(folder);
+var dbPath = Path.Join(builder.Environment.ContentRootPath, "SolarDesign.db");
+
+// Configure SQLite with explicit file path
 builder.Services.AddDbContext<SolarDesignDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite($"Data Source={dbPath}"));
 
 // Register HTTP client
 builder.Services.AddHttpClient();
@@ -31,12 +36,31 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ISimulationService, SimulationService>();
 builder.Services.AddScoped<ShadingAnalysisService>();
 builder.Services.AddScoped<PanelLayoutService>();
+builder.Services.AddScoped<ProductionCalculationService>();
+builder.Services.AddScoped<FinancialAnalysisService>();
 
 // Add API Explorer
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Create database if it doesn't exist
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<SolarDesignDbContext>();
+        // This will create the database if it doesn't exist
+        context.Database.EnsureCreated();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while creating the database.");
+    }
+}
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

@@ -9,11 +9,11 @@ namespace SolarSimPro.Server.Models
 
         [Required]
         [StringLength(100)]
-        public string Manufacturer { get; set; }
+        public string? Manufacturer { get; set; }
 
         [Required]
         [StringLength(100)]
-        public string ModelName { get; set; }
+        public string? ModelName { get; set; }
 
         public double NominalPowerAc { get; set; } // kW
         public double MaxEfficiency { get; set; } // %

@@ -1,3 +1,4 @@
+// solarsimpro.client/vite.config.js
 import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
@@ -47,11 +48,11 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/weatherforecast': {
+            '^/api': {
                 target,
                 secure: false
-            }
-        },
+            },
+                   },
         port: parseInt(env.DEV_SERVER_PORT || '57997'),
         https: {
             key: fs.readFileSync(keyFilePath),
